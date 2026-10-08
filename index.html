@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b6cff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Költségek">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Költségkövető</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eceef8;--card:#fff;--chip:#f1f2fa;--fg:#161828;--muted:#6f7491;--line:#e6e8f3;--accent:#5b6cff;--accent-fg:#fff;--danger:#d64550;--shadow:0 6px 24px rgba(40,48,110,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c0e17;--card:#171a28;--chip:#222639;--fg:#eef0fc;--muted:#8d92b2;--line:#262a3f;--accent:#8ea2ff;--accent-fg:#12132a;--danger:#ff7a85;--shadow:0 6px 24px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#0c0e17;--card:#171a28;--chip:#222639;--fg:#eef0fc;--muted:#8d92b2;--line:#262a3f;--accent:#8ea2ff;--accent-fg:#12132a;--danger:#ff7a85;--shadow:0 6px 24px rgba(0,0,0,.35)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+html,body{margin:0;min-height:100%}
+body{background:#eceef8;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;touch-action:manipulation;line-height:1.35}
+button,input{font-family:inherit;font-size:16px;color:inherit}
+main{max-width:480px;margin:0 auto;padding:14px 16px 48px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border-radius:24px;padding:20px;box-shadow:var(--shadow)}
+h2{margin:0 0 16px;font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.hero{border-radius:28px;padding:18px 20px 20px;color:#fff;background:radial-gradient(120% 140% at 100% 0%,#9b6bff 0%,rgba(155,107,255,0) 55%),linear-gradient(135deg,#4457f0,#6a4df0);box-shadow:0 14px 34px rgba(80,82,230,.35)}
+.monthbar{display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:15px}
+.monthbar button{border:0;background:rgba(255,255,255,.18);color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1;backdrop-filter:blur(6px)}
+.monthbar button:active{background:rgba(255,255,255,.3)}
+.herolabel{margin-top:18px;font-size:13px;opacity:.75}
+.herototal{font-size:clamp(34px,11vw,46px);font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.herometa{font-size:13px;opacity:.85;min-height:18px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.stats3 div{background:rgba(255,255,255,.14);border-radius:16px;padding:10px 12px;min-width:0}
+.stats3 b{display:block;font-size:15px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stats3 span{font-size:11px;opacity:.75}
+.amtwrap{position:relative}
+.amt{width:100%;border:2px solid transparent;background:var(--chip);border-radius:18px;padding:16px 56px 16px 18px;font-size:32px;font-weight:650;letter-spacing:-.5px}
+.amtwrap em{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);font-weight:600;font-size:18px}
+.amt:focus,.inp:focus{outline:none;border-color:var(--accent)}
+.amt::placeholder,.inp::placeholder{color:var(--muted);opacity:.7;font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip{border:0;background:var(--chip);border-radius:999px;padding:9px 14px 9px 11px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:transform .12s,background .2s}
+.chip i{width:10px;height:10px;border-radius:50%;display:block}
+.chip:active{transform:scale(.95)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);font-weight:600;box-shadow:0 4px 14px rgba(91,108,255,.4)}
+.chip[aria-pressed="true"] i{box-shadow:0 0 0 2px rgba(255,255,255,.7)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+.tile{border:0;background:var(--chip);border-radius:18px;padding:12px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;min-width:0;transition:transform .15s,background .2s}
+.tile:active{transform:scale(.94)}
+.tile .ic{width:44px;height:44px;border-radius:15px;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s,box-shadow .2s}
+.tile[aria-pressed="true"] .ic{transform:scale(1.06)}
+.tile .tl{font-size:11.5px;font-weight:550;color:var(--fg);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:360px){.tile .tl{font-size:10px}.tile .ic{width:40px;height:40px}}
+.row{display:flex;gap:8px}
+.inp{flex:1;min-width:0;border:2px solid transparent;background:var(--chip);border-radius:14px;padding:12px 14px;width:100%}
+.add{width:100%;margin-top:14px;border:0;border-radius:16px;padding:16px;font-weight:650;font-size:16px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#4457f0,#7a4df0);box-shadow:0 8px 20px rgba(91,80,240,.35);transition:transform .12s}
+.add:active{transform:scale(.98)}
+.err{color:var(--danger);font-size:13px;min-height:18px;margin-top:8px}
+.donutwrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+.donut{position:relative;width:210px;height:210px}
+.legend{width:100%;display:flex;flex-direction:column;gap:14px}
+.lrow .top{display:flex;align-items:center;gap:8px;font-size:14px}
+.lrow i{width:10px;height:10px;border-radius:50%;flex:none}
+.lrow .n{flex:1;font-weight:550}
+.lrow .p{color:var(--muted);font-size:12px;width:46px;text-align:right}
+.lrow .v{font-variant-numeric:tabular-nums;font-weight:600;min-width:86px;text-align:right}
+.lrow .bar{height:6px;border-radius:99px;background:var(--chip);margin-top:7px;overflow:hidden}
+.lrow .bar u{display:block;height:100%;border-radius:99px;text-decoration:none}
+.donut svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 8px 14px rgba(40,48,110,.14))}
+.donut .seg{cursor:pointer;transition:stroke-dasharray .8s cubic-bezier(.2,.8,.2,1),stroke-width .25s,opacity .25s}
+.donut .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 38px;pointer-events:none}
+.mid .mi{display:none;width:32px;height:32px;border-radius:11px;align-items:center;justify-content:center;margin-bottom:4px}
+.mid .ms{font-size:12px;color:var(--muted);font-weight:600}
+.mid b{font-size:19px;font-weight:750;letter-spacing:-.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mid .mp{font-size:11px;color:var(--muted);margin-top:2px}
+.lrow{padding:9px 11px;margin:-9px -11px;border-radius:14px;cursor:pointer;transition:background .2s,opacity .2s}
+.lrow.on{background:var(--chip)}
+.lrow.dim{opacity:.4}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:10px 0}
+.trend svg{width:100%;height:auto;display:block;overflow:visible}
+.dayh{display:flex;justify-content:space-between;font-size:12px;font-weight:650;color:var(--muted);margin:18px 0 6px;text-transform:capitalize}
+.dayh:first-child{margin-top:0}
+.item{display:flex;align-items:center;gap:12px;padding:8px 0;animation:in .3s ease both}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.av{width:40px;height:40px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.item .t{flex:1;min-width:0}
+.item .t div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:550}
+.item .t small{color:var(--muted);font-size:12px}
+.item .a{font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+.item button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:20px;width:32px;height:32px;border-radius:50%;opacity:.6}
+.item button:hover{color:var(--danger);opacity:1}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:360px){.stats3 b{font-size:13px}.amt{font-size:28px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <div class="monthbar">
+      <button id="prev" aria-label="Előző hónap">‹</button>
+      <span id="monthLabel"></span>
+      <button id="next" aria-label="Következő hónap">›</button>
+    </div>
+    <div class="herolabel">Havi kiadás</div>
+    <div class="herototal" id="heroTotal">0 Ft</div>
+    <div class="herometa" id="heroMeta"></div>
+    <div class="stats3">
+      <div><b id="stCount">0</b><span>tétel</span></div>
+      <div><b id="stAvg">0 Ft</b><span>napi átlag</span></div>
+      <div><b id="stMax">–</b><span>legnagyobb</span></div>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>Gyors rögzítés</h2>
+    <div class="amtwrap"><input id="amount" class="amt" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="Összeg forintban"><em>Ft</em></div>
+    <div class="tiles" id="chips" role="group" aria-label="Kategória"></div>
+    <div class="row">
+      <input id="note" class="inp" type="text" maxlength="60" placeholder="Megjegyzés (nem kötelező)" aria-label="Megjegyzés">
+      <input id="date" class="inp" type="date" style="flex:0 0 150px" aria-label="Dátum">
+    </div>
+    <div class="err" id="err" role="alert"></div>
+    <button class="add" id="addBtn">Hozzáadás</button>
+  </section>
+
+  <section class="card">
+    <h2>Kategóriák</h2>
+    <div class="donutwrap">
+      <div class="donut">
+        <svg viewBox="0 0 200 200" id="donut" aria-hidden="true"></svg>
+        <div class="mid"><span class="mi" id="midI"></span><span class="ms" id="midS">Összesen</span><b id="midT">0 Ft</b><span class="mp" id="midP"></span></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section class="card trend">
+    <h2>Havi trend</h2>
+    <div id="trend"></div>
+  </section>
+
+  <section class="card">
+    <h2>Tételek</h2>
+    <div id="list"></div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var CATS=[
+    {id:'food',name:'Étel',color:'#ff8a4c'},
+    {id:'transport',name:'Közlekedés',color:'#2fa8ff'},
+    {id:'home',name:'Lakás',color:'#8e7cff'},
+    {id:'fun',name:'Szórakozás',color:'#ff5fa2'},
+    {id:'shop',name:'Vásárlás',color:'#1fc48f'},
+    {id:'health',name:'Egészség',color:'#ff5a64'},
+    {id:'travel',name:'Utazás',color:'#f2b01e'},
+    {id:'other',name:'Egyéb',color:'#8f98b2'}
+  ];
+  var ICONS={
+    food:'<path d="M7 3v7a2 2 0 0 1-4 0V3"/><path d="M5 3v18"/><path d="M19 21V3c-3 1.4-4.500 4.500-4.500 8.500H19"/>',
+    transport:'<path d="M4 17h16v-3.500a2 2 0 0 0-.4-1.200l-2.100-2.800A2 2 0 0 0 16 8.500H8a2 2 0 0 0-1.500.8l-2.100 2.800a2 2 0 0 0-.4 1.200V17z"/><circle cx="7.500" cy="17.500" r="1.700"/><circle cx="16.500" cy="17.500" r="1.700"/>',
+    home:'<path d="M3 11.500 12 4l9 7.500"/><path d="M5.500 10v10h13V10"/><path d="M10 20v-5.500h4V20"/>',
+    fun:'<path d="M9 18V6l10-2v12"/><circle cx="6.500" cy="18" r="2.500"/><circle cx="16.500" cy="16" r="2.500"/>',
+    shop:'<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.500a3 3 0 0 1 6 0V8"/>',
+    health:'<path d="M12 20s-7.500-4.600-7.500-10.200A4.200 4.200 0 0 1 12 7.400a4.200 4.200 0 0 1 7.500 2.400C19.500 15.400 12 20 12 20z"/>',
+    travel:'<path d="M21 3 3 10l7 3 3 7 8-17z"/><path d="M10 13 21 3"/>',
+    other:'<circle cx="6" cy="12" r="1.400" fill="currentColor"/><circle cx="12" cy="12" r="1.400" fill="currentColor"/><circle cx="18" cy="12" r="1.400" fill="currentColor"/>'
+  };
+  function icon(id,size){
+    return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICONS[id]||ICONS.other)+'</svg>';
+  }
+  var MONTHS=['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
+  var SHORT=['jan','febr','márc','ápr','máj','jún','júl','aug','szept','okt','nov','dec'];
+  var NS='http://www.w3.org/2000/svg';
+  var $=function(id){return document.getElementById(id)};
+
+  function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+  var items=load('kk_items',[]);
+  if(!Array.isArray(items))items=[];
+  items=items.filter(function(x){return x&&typeof x.amt==='number'&&typeof x.date==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x.date)});
+
+  function catById(id){for(var i=0;i<CATS.length;i++)if(CATS[i].id===id)return CATS[i];return CATS[CATS.length-1]}
+  function pad(n){return (n<10?'0':'')+n}
+  function dkey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+  function ft(n){return Math.round(n).toLocaleString('hu-HU').replace(/\u00a0|\u202f/g,' ')+' Ft'}
+
+  var now=new Date();
+  var viewY=now.getFullYear(),viewM=now.getMonth();
+  var selCat='food';
+  $('date').value=dkey(now);
+
+  function mkey(y,m){return y+'-'+pad(m+1)}
+  function monthItems(y,m){var k=mkey(y,m);return items.filter(function(x){return x.date.slice(0,7)===k})}
+  function sum(arr){return arr.reduce(function(s,x){return s+x.amt},0)}
+  function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+  function svgEl(tag,attrs){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e}
+
+  // kategória csempék
+  function renderChips(){
+    var box=$('chips');box.innerHTML='';
+    CATS.forEach(function(c){
+      var on=c.id===selCat;
+      var b=el('button','tile');b.type='button';
+      b.setAttribute('aria-pressed',String(on));
+      b.setAttribute('aria-label',c.name);
+      var ic=el('span','ic');ic.innerHTML=icon(c.id,22);
+      ic.style.background=on?c.color:c.color+'26';
+      ic.style.color=on?'#fff':c.color;
+      if(on){ic.style.boxShadow='0 6px 14px '+c.color+'66';b.style.background=c.color+'1f'}
+      b.appendChild(ic);b.appendChild(el('span','tl',c.name));
+      b.addEventListener('click',function(){selCat=c.id;renderChips()});
+      box.appendChild(b);
+    });
+  }
+
+  // hero
+  function dayCount(){
+    var dim=new Date(viewY,viewM+1,0).getDate(),n=new Date();
+    return (n.getFullYear()===viewY&&n.getMonth()===viewM)?n.getDate():dim;
+  }
+  function renderHero(arr){
+    var t=sum(arr);
+    $('heroTotal').textContent=ft(t);
+    var pd=new Date(viewY,viewM-1,1),p=sum(monthItems(pd.getFullYear(),pd.getMonth()));
+    var meta='';
+    if(p>0&&t>0){var pc=Math.round((t-p)/p*100);meta=(pc>0?'▲ ':pc<0?'▼ ':'')+Math.abs(pc)+'% az előző hónaphoz képest'}
+    else if(p>0){meta='Előző hónap: '+ft(p)}
+    else if(t>0){meta='Nincs előző havi adat'}
+    $('heroMeta').textContent=meta;
+    $('stCount').textContent=arr.length;
+    $('stAvg').textContent=ft(t/dayCount());
+    $('stMax').textContent=arr.length?ft(Math.max.apply(null,arr.map(function(x){return x.amt}))):'–';
+  }
+
+  // fánkdiagram (interaktív)
+  var sel=null;
+  function renderDonut(arr){
+    var svg=$('donut'),legend=$('legend');
+    svg.innerHTML='';legend.innerHTML='';
+    var R=80,SW=18,C=2*Math.PI*R,total=sum(arr);
+    svg.appendChild(svgEl('circle',{cx:100,cy:100,r:R,fill:'none',stroke:'var(--chip)','stroke-width':SW}));
+    var mi=$('midI');
+    function mid(iconId,color,name,val,sub){
+      if(iconId){mi.style.display='flex';mi.innerHTML=icon(iconId,18);mi.style.background=color+'26';mi.style.color=color}
+      else{mi.style.display='none';mi.innerHTML=''}
+      $('midS').textContent=name;$('midT').textContent=val;$('midP').textContent=sub;
+    }
+    if(total<=0){
+      sel=null;mid(null,'','Összesen','0 Ft','nincs adat');
+      legend.appendChild(el('div','empty','Ebben a hónapban még nincs kiadás.'));return;
+    }
+    var by={};arr.forEach(function(x){by[x.cat]=(by[x.cat]||0)+x.amt});
+    var rows=CATS.filter(function(c){return by[c.id]>0}).map(function(c){return {c:c,v:by[c.id]}});
+    rows.sort(function(a,b){return b.v-a.v});
+    if(sel&&!rows.some(function(r){return r.c.id===sel}))sel=null;
+    var multi=rows.length>1,offset=0,segs=[],rowEls=[];
+    function fp(v){var x=v/total*100;return x>=10?Math.round(x)+'%':x>=1?(Math.round(x*10)/10+'').replace('.',',')+'%':'<1%'}
+    function apply(){
+      segs.forEach(function(g){
+        var on=sel===g.id;
+        g.el.style.opacity=(sel&&!on)?'.22':'1';
+        g.el.setAttribute('stroke-width',on?SW+5:SW);
+      });
+      rowEls.forEach(function(g){
+        g.el.className='lrow'+(sel===g.id?' on':(sel?' dim':''));
+      });
+      var r=null;rows.forEach(function(x){if(x.c.id===sel)r=x});
+      if(r)mid(r.c.id,r.c.color,r.c.name,ft(r.v),fp(r.v)+' a kiadásból');
+      else mid(null,'','Összesen',ft(total),rows.length+' kategória');
+    }
+    function pick(id){sel=(sel===id)?null:id;apply()}
+    rows.forEach(function(r){
+      var share=r.v/total*C;
+      var GAP=(multi&&share>8)?2.5:0;
+      var len=multi?Math.max(2,share-GAP):C;
+      var start=multi?offset+GAP/2:0;
+      var seg=svgEl('circle',{cx:100,cy:100,r:R,fill:'none',stroke:r.c.color,'stroke-width':SW,
+        'stroke-linecap':'butt','stroke-dasharray':'0.01 '+C,'stroke-dashoffset':-start,'class':'seg'});
+      seg.addEventListener('click',function(){pick(r.c.id)});
+      svg.appendChild(seg);
+      segs.push({id:r.c.id,el:seg,len:len});
+      offset+=share;
+      var pc=r.v/total*100;
+      var d=el('div','lrow'),top=el('div','top');
+      d.setAttribute('role','button');d.tabIndex=0;
+      var dot=el('i');dot.style.background=r.c.color;
+      top.appendChild(dot);
+      top.appendChild(el('span','n',r.c.name));
+      top.appendChild(el('span','p',fp(r.v)));
+      top.appendChild(el('span','v',ft(r.v)));
+      var bar=el('div','bar'),fill=el('u');
+      fill.style.width=Math.max(1.5,pc)+'%';fill.style.background=r.c.color;
+      bar.appendChild(fill);d.appendChild(top);d.appendChild(bar);
+      d.addEventListener('click',function(){pick(r.c.id)});
+      d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(r.c.id)}});
+      legend.appendChild(d);rowEls.push({id:r.c.id,el:d});
+    });
+    apply();
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      segs.forEach(function(g){g.el.setAttribute('stroke-dasharray',g.len+' '+(C-g.len))});
+    })});
+  }
+
+  // havi trend
+  function fmtK(v){return v>=1e6?(v/1e6).toFixed(1).replace('.',',')+' M':Math.round(v/1000)+' e'}
+  function renderTrend(){
+    var pts=[],i;
+    for(i=5;i>=0;i--){
+      var d=new Date(viewY,viewM-i,1);
+      pts.push({y:d.getFullYear(),m:d.getMonth(),v:sum(monthItems(d.getFullYear(),d.getMonth()))});
+    }
+    var W=320,H=170,L=16,Rr=16,T=30,B=28;
+    var max=Math.max.apply(null,pts.map(function(p){return p.v}));
+    var box=$('trend');box.innerHTML='';
+    var svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Havi kiadások trendje'});
+    var defs=svgEl('defs',{}),g=svgEl('linearGradient',{id:'tg',x1:0,y1:0,x2:0,y2:1});
+    g.appendChild(svgEl('stop',{offset:'0%','stop-color':'var(--accent)','stop-opacity':.35}));
+    g.appendChild(svgEl('stop',{offset:'100%','stop-color':'var(--accent)','stop-opacity':0}));
+    defs.appendChild(g);svg.appendChild(defs);
+    var step=(W-L-Rr)/5,base=H-B;
+    for(i=0;i<3;i++){
+      var gy=T+(base-T)*i/2;
+      svg.appendChild(svgEl('line',{x1:L,x2:W-Rr,y1:gy,y2:gy,stroke:'var(--line)','stroke-width':1,'stroke-dasharray':i===2?'':'3 5'}));
+    }
+    var xs=pts.map(function(_,k){return L+step*k});
+    var ys=pts.map(function(p){return max>0?T+(base-T)*(1-p.v/max):base});
+    var line=xs.map(function(x,k){return (k?'L':'M')+x.toFixed(1)+' '+ys[k].toFixed(1)}).join(' ');
+    svg.appendChild(svgEl('path',{d:line+' L'+xs[5]+' '+base+' L'+xs[0]+' '+base+' Z',fill:'url(#tg)'}));
+    svg.appendChild(svgEl('path',{d:line,fill:'none',stroke:'var(--accent)','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'}));
+    pts.forEach(function(p,k){
+      var last=k===5;
+      if(last)svg.appendChild(svgEl('circle',{cx:xs[k],cy:ys[k],r:9,fill:'var(--accent)',opacity:.18}));
+      svg.appendChild(svgEl('circle',{cx:xs[k],cy:ys[k],r:last?5:3.5,fill:last?'var(--accent)':'var(--card)',stroke:'var(--accent)','stroke-width':2}));
+      var lab=svgEl('text',{x:xs[k],y:H-8,'text-anchor':k===0?'start':(last?'end':'middle'),'font-size':11,fill:last?'var(--fg)':'var(--muted)','font-weight':last?'700':'400'});
+      if(k===0)lab.setAttribute('x',L-4);
+      if(last)lab.setAttribute('x',W-Rr+4);
+      lab.textContent=SHORT[p.m];svg.appendChild(lab);
+      var val=svgEl('text',{x:xs[k],y:Math.max(12,ys[k]-12),'text-anchor':k===0?'start':(last?'end':'middle'),'font-size':10,fill:last?'var(--fg)':'var(--muted)','font-weight':last?'700':'500'});
+      if(k===0)val.setAttribute('x',L-4);
+      if(last)val.setAttribute('x',W-Rr+4);
+      val.textContent=p.v>0?fmtK(p.v):'0';svg.appendChild(val);
+    });
+    box.appendChild(svg);
+  }
+
+  // tételek napok szerint csoportosítva
+  var DAYN=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
+  function renderList(arr){
+    var box=$('list');box.innerHTML='';
+    if(!arr.length){box.appendChild(el('div','empty','Nincs tétel ebben a hónapban.'));return}
+    var sorted=arr.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.id>a.id?1:-1)});
+    var cur='';
+    sorted.forEach(function(x){
+      if(x.date!==cur){
+        cur=x.date;
+        var dt=new Date(Number(x.date.slice(0,4)),Number(x.date.slice(5,7))-1,Number(x.date.slice(8)));
+        var daySum=sum(arr.filter(function(y){return y.date===cur}));
+        var h=el('div','dayh');
+        h.appendChild(el('span',null,dt.getDate()+'. '+DAYN[dt.getDay()]));
+        h.appendChild(el('span',null,ft(daySum)));
+        box.appendChild(h);
+      }
+      var c=catById(x.cat);
+      var row=el('div','item');
+      var av=el('div','av');av.innerHTML=icon(c.id,20);
+      av.style.background=c.color+'26';av.style.color=c.color;
+      var t=el('div','t');
+      t.appendChild(el('div',null,x.note?x.note:c.name));
+      if(x.note)t.appendChild(el('small',null,c.name));
+      var a=el('div','a',ft(x.amt));
+      var del=el('button',null,'×');del.type='button';del.setAttribute('aria-label','Tétel törlése');
+      del.addEventListener('click',function(){
+        items=items.filter(function(y){return y.id!==x.id});
+        save('kk_items',items);render();
+      });
+      row.appendChild(av);row.appendChild(t);row.appendChild(a);row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+
+  // a dátummező mindig a megjelenített hónapon belül marad
+  function syncDate(){
+    var mk=mkey(viewY,viewM),first=mk+'-01',last=mk+'-'+pad(new Date(viewY,viewM+1,0).getDate());
+    var d=$('date');d.min=first;d.max=last;
+    var v=d.value;
+    if(!v||v<first||v>last){
+      var n=new Date(),today=dkey(n);
+      d.value=(n.getFullYear()===viewY&&n.getMonth()===viewM)?today:(first>today?first:last);
+    }
+  }
+
+  function render(){
+    syncDate();
+    $('monthLabel').textContent=viewY+'. '+MONTHS[viewM];
+    var arr=monthItems(viewY,viewM);
+    renderHero(arr);renderDonut(arr);renderTrend();renderList(arr);
+  }
+
+  // hozzáadás
+  function add(){
+    var raw=$('amount').value.replace(/[\s\u00a0]/g,'').replace(/ft$/i,'').replace(',','.');
+    var n=Number(raw),err=$('err');
+    if(!raw||!isFinite(n)||n<=0){err.textContent='Adj meg egy pozitív összeget.';return}
+    if(n>1e9){err.textContent='Az összeg túl nagy.';return}
+    var date=$('date').value;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){err.textContent='Válassz érvényes dátumot.';return}
+    var dmin=$('date').min,dmax=$('date').max;
+    if(date<dmin||date>dmax){err.textContent='A dátum a megjelenített hónapba essen. Hónapot a fenti nyilakkal válthatsz.';return}
+    err.textContent='';
+    items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),amt:Math.round(n),cat:selCat,note:$('note').value.trim(),date:date});
+    save('kk_items',items);
+    $('amount').value='';$('note').value='';
+    render();$('amount').focus();
+  }
+  $('addBtn').addEventListener('click',add);
+  ['amount','note'].forEach(function(id){
+    $(id).addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();add()}});
+  });
+  $('prev').addEventListener('click',function(){var d=new Date(viewY,viewM-1,1);viewY=d.getFullYear();viewM=d.getMonth();render()});
+  $('next').addEventListener('click',function(){var d=new Date(viewY,viewM+1,1);viewY=d.getFullYear();viewM=d.getMonth();render()});
+
+  renderChips();render();
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+}
+</script>
+</body>
+</html>
